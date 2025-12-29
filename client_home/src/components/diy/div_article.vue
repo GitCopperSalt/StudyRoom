@@ -235,7 +235,7 @@
         align-items: center;
         flex-wrap: wrap;
         margin: 0 0.625rem 0.625rem 0;
-        font-size: var(--font_base);
+        font-size: 0.875rem;
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         color: rgba(0, 0, 0, 0.3);
     }
@@ -261,7 +261,7 @@
         display: flex;
         align-items: center;
         padding: 0 0.25rem;
-        font-size: var(--font_small);
+        font-size: 0.75rem;
         border-radius: 0.125rem;
         background: rgba(0, 0, 0, 0.05);
         color: rgba(0, 0, 0, 0.3);
@@ -269,7 +269,7 @@
 
 
     .title {
-        font-size: var(--font_subtitle);
+        font-size: 1.35rem;
         line-height: 1.4;
         margin-bottom: 1rem;
         font-weight: 400;

@@ -156,7 +156,7 @@ export default {
 
 .news-date {
 	color: #6c757d;
-	font-size: var(--font_base);
+	font-size: 0.9rem;
 }
 
 .section-title {
@@ -209,7 +209,7 @@ export default {
 }
 
 .story-hint {
-	font-size: var(--font_small);
+	font-size: 0.85rem;
 	opacity: 0.9;
 }
 
@@ -264,7 +264,7 @@ export default {
 }
 
 .news-hint {
-	font-size: var(--font_small);
+	font-size: 0.8rem;
 	opacity: 0.9;
 }
 
@@ -291,7 +291,7 @@ export default {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	font-size: var(--font_small);
+	font-size: 0.8rem;
 	color: #6c757d;
 }
 

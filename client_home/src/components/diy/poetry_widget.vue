@@ -93,7 +93,7 @@ export default {
   display: flex;
   align-items: center;
   color: #666;
-  font-size: var(--font_base);
+  font-size: 0.9rem;
 }
 
 .poetry-text {
@@ -112,13 +112,13 @@ export default {
 
 .quote-icon {
   color: #007bff;
-  font-size: var(--font_base);
+  font-size: 1rem;
   margin-top: 0.2rem;
   flex-shrink: 0;
 }
 
 .poetry-content-text {
-  font-size: var(--font_base);
+  font-size: 0.85rem;
   color: #333;
   line-height: 1.4;
   font-style: italic;
@@ -131,7 +131,7 @@ export default {
 }
 
 .refresh-btn {
-  font-size: var(--font_small);
+  font-size: 0.8rem;
   padding: 0.25rem 0.5rem;
   border-radius: 8px;
 }

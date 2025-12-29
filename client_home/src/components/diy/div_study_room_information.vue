@@ -354,7 +354,7 @@
 	height: 50px;
 	line-height: 50px;
 	background: rgb(4, 126, 134);
-	font-size: var(--font_title);
+	font-size: 22px;
 	color: #fff;
 	margin-bottom: 40px;
 	padding-left: 15px;
@@ -398,13 +398,13 @@
 .row_top_wrap .row_2 .view .diy_title{
 	width: 100px;
 	text-align: right;
-	font-size: var(--font_subtitle);
+	font-size: 20px;
 	height: 32px;
 	line-height: 32px;
 }
 .row_top_wrap .row_2 .view .diy_field{
 	margin-left: 15px;
-	font-size: var(--font_base);
+	font-size: 18px;
 }
 .rich_text{
 	margin-bottom: 25px;
@@ -467,12 +467,12 @@
 	width: 100px;
 	height: 40px;
 	text-align: center;
-	background: var(--color_success);
-	border-color: var(--color_success);
+	background: rgb(3, 129, 112);
+	border-color: rgb(3, 129, 112);
 }
 .details_btn:hover{
-	background: var(--color_success_h);
-	border-color: var(--color_success);
+	background: rgb(2, 158, 137);
+	border-color: rgb(3, 129, 112);
 }
 .mt{
 	font-size: 22px;

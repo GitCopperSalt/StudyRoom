@@ -110,7 +110,7 @@ export default {
     border-radius: 0.5rem;
   }
 .title {
-  font-size: var(--font_subtitle);
+  font-size: 1.5rem;
   font-weight: bold;
   padding-left: 1rem;
 }

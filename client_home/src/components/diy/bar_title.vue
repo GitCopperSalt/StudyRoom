@@ -47,7 +47,7 @@
 	
 	.more {
 		float: right;
-		font-size: var(--font_base);
+		font-size: 0.875rem;
 		color: #666;
 		overflow: hidden;
 		margin-right: 5px;

@@ -263,7 +263,7 @@
 
     .hot_title {
       height: 4rem;
-      font-size: var(--font_subtitle);
+      font-size: 1.2rem;
       font-weight: bold;
       align-items: center;
       justify-content: center;

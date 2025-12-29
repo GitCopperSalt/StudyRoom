@@ -171,7 +171,7 @@
 
 	.forgot_nav {
 		text-align: left;
-		font-size: var(--font_small);
+		font-size: 10px;
 		margin-top: 5px;
 		cursor: pointer;
 	}

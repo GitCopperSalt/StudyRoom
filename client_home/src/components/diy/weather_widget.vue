@@ -241,7 +241,7 @@ export default {
 }
 
 .weather-update-time {
-	font-size: var(--font_small);
+	font-size: 0.85rem;
 	color: #666;
 }
 
@@ -262,14 +262,14 @@ export default {
 }
 
 .temp-value {
-	font-size: var(--font_huge);
+	font-size: 3rem;
 	font-weight: 300;
 	display: block;
 	line-height: 1;
 }
 
 .temp-range {
-	font-size: var(--font_base);
+	font-size: 0.9rem;
 	opacity: 0.9;
 }
 
@@ -278,7 +278,7 @@ export default {
 }
 
 .weather-condition {
-	font-size: var(--font_base);
+	font-size: 1.2rem;
 	font-weight: 500;
 	margin-bottom: 0.5rem;
 }

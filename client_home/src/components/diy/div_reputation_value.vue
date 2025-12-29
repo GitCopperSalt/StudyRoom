@@ -313,7 +313,7 @@
 	height: 50px;
 	line-height: 50px;
 	background: rgb(4, 126, 134);
-	font-size: var(--font_title);
+	font-size: 22px;
 	color: #fff;
 	margin-bottom: 40px;
 	padding-left: 15px;
@@ -357,13 +357,13 @@
 .row_top_wrap .row_2 .view .diy_title{
 	width: 100px;
 	text-align: right;
-	font-size: var(--font_subtitle);
+	font-size: 20px;
 	height: 32px;
 	line-height: 32px;
 }
 .row_top_wrap .row_2 .view .diy_field{
 	margin-left: 15px;
-	font-size: var(--font_base);
+	font-size: 18px;
 }
 .rich_text{
 	margin-bottom: 25px;
@@ -374,7 +374,7 @@
 	padding-bottom: 25px;
 }
 .rich_text .diy_title{
-	font-size: var(--font_title);
+	font-size: 22px;
 	height: 24px;
 	line-height: 24px;
 	padding-left: 10px;
@@ -385,7 +385,7 @@
 .rich_text .diy_html h1,
 .rich_text .diy_html h2,
 .rich_text .diy_html h3{
-	font-size: var(--font_base)!important;
+	font-size: 18px!important;
 	color: #333!important;
 	font-weight: bold!important;
 	margin-bottom: 15px!important;
@@ -394,7 +394,7 @@
 .rich_text .diy_html div,
 .rich_text .diy_html a,
 .rich_text .diy_html span{
-	font-size: var(--font_base)!important;
+	font-size: 16px!important;
 	color: #666!important;
 }
 .rich_text .diy_html img{
@@ -426,12 +426,12 @@
 	width: 100px;
 	height: 40px;
 	text-align: center;
-	background: var(--color_success);
-	border-color: var(--color_success);
+	background: rgb(3, 129, 112);
+	border-color: rgb(3, 129, 112);
 }
 .details_btn:hover{
-	background: var(--color_success_h);
-	border-color: var(--color_success);
+	background: rgb(2, 158, 137);
+	border-color: rgb(3, 129, 112);
 }
 .mt{
 	font-size: 22px;

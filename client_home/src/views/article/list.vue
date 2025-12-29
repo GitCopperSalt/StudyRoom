@@ -255,7 +255,7 @@
     }
 
     .title {
-      font-size: var(--font_subtitle);
+      font-size: 1.5rem;
       font-weight: bold;
       padding-left: 1rem;
     }
@@ -301,7 +301,7 @@
 
     .hot_title {
         height: 4rem;
-        font-size: var(--font_subtitle);
+        font-size: 1.2rem;
         font-weight: bold;
         align-items: center;
         justify-content: center;
@@ -314,7 +314,7 @@
     }
 
     .article_list h4 {
-        font-size: var(--font_subtitle);
+        font-size: 20px;
     }
 
     .article_list {
@@ -326,7 +326,7 @@
     }
 
     .list_hot h4 {
-        font-size: var(--font_subtitle);
+        font-size: 20px;
     }
 
     .filter_block {

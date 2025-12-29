@@ -440,7 +440,7 @@
 
 }
 .support_module_title .title_btn{
-	font-size: var(--font_base);
+	font-size: 20px;
 	cursor: pointer;
 	margin-right: 20px;
 	color: #888;
@@ -503,7 +503,7 @@
         justify-content: center;
     }
     .support_module .item.item-center span{
-        font-size: var(--font_small);
+        font-size: 12px;
         padding: 2px 4px;
         color: #fff;
         background-color: #dadada;
@@ -529,7 +529,7 @@
     .support_module textarea{
         flex: 1;
         padding: 10px;
-        font-size: var(--font_base);
+        font-size: 14px;
         border: none;
         overflow-y: auto;
         overflow-x: hidden;
@@ -598,7 +598,7 @@
 	}
 
 	.notice_title {
-	    font-size: var(--font_subtitle);
+	    font-size: 1.2rem;
 	    font-weight: bold;
 	    color: white;
 	    display: flex;
@@ -641,7 +641,7 @@
 	    float: left;
 	    height: 4rem;
 	    color: white;
-	    font-size: var(--font_subtitle);
+	    font-size: 1.5rem;
 	    font-weight: bold;
 	    padding-left: 1rem;
 	}
@@ -650,7 +650,7 @@
 	    float: right;
 	    height: 4rem;
 	    color: white;
-	    font-size: var(--font_subtitle);
+	    font-size: 1.5rem;
 	    padding-right: 1rem;
 	}
 
@@ -659,7 +659,7 @@
 	    border: 0.125rem solid white;
 	    display: flex;
 	    align-items: center;
-	    font-size: var(--font_subtitle);
+	    font-size: 1.2rem;
 	    justify-content: center;
 	    height: 3rem;
 	    width: 3.5rem;
@@ -677,7 +677,7 @@
 	    border: 0.125rem solid white;
 	    display: flex;
 	    align-items: center;
-	    font-size: var(--font_subtitle);
+	    font-size: 1.2rem;
 	    justify-content: center;
 	    height: 3rem;
 	    width: 6rem;
@@ -692,7 +692,7 @@
 	.overflow-auto .table td {
 	    text-align: center;
 	    text-wrap: normal;
-	    font-size: var(--font_base);
+	    font-size: 1rem;
 	    vertical-align: middle;
 	}
 

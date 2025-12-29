@@ -194,7 +194,7 @@ export default {
 }
 
 .history-date {
-	font-size: var(--font_small);
+	font-size: 0.85rem;
 	color: #666;
 	font-weight: 500;
 }
@@ -212,14 +212,14 @@ export default {
 }
 
 .event-year {
-	font-size: var(--font_small);
+	font-size: 0.85rem;
 	color: #007bff;
 	font-weight: 600;
 	margin-bottom: 0.5rem;
 }
 
 .event-title {
-	font-size: var(--font_base);
+	font-size: 0.95rem;
 	color: #333;
 	line-height: 1.4;
 	font-weight: 500;
@@ -231,7 +231,7 @@ export default {
 }
 
 .section-title {
-	font-size: var(--font_small);
+	font-size: 0.85rem;
 	color: #666;
 	margin-bottom: 0.6rem;
 	font-weight: 600;
@@ -282,7 +282,7 @@ export default {
 }
 
 .overlay-icon {
-	font-size: var(--font_huge);
+	font-size: 1.8rem;
 	margin-bottom: 0.5rem;
 }
 

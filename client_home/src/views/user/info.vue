@@ -28,7 +28,7 @@
 												<span>昵称：</span>
 											</div>
 											<div :style="'display:' + display_name + ';'">
-												<span style="font-size: var(--font_base); color: var(--color_grey)">
+												<span style="font-size: 1.2rem; color: var(--color_grey)">
 													{{ obj.nickname }}
 												</span>
 											</div>
