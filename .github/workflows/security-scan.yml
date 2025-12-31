@@ -1,0 +1,64 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # 每周一凌晨2点运行安全扫描
+    - cron: '0 2 * * 1'
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [client_admin, client_home]
+    
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+      
+    steps:
+    - name: Checkout代码
+      uses: actions/checkout@v4
+      
+    - name: 设置Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        
+    - name: 安装依赖
+      working-directory: ./${{ matrix.project }}
+      run: npm ci
+      
+    - name: 运行npm audit
+      working-directory: ./${{ matrix.project }}
+      run: npm audit --audit-level=moderate
+      
+    - name: 安装Trivy
+      run: |
+        sudo apt-get update
+        sudo apt-get install wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        echo "deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | sudo tee -etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install trivy
+        
+    - name: 运行Trivy漏洞扫描
+      working-directory: ./${{ matrix.project }}
+      run: trivy fs --format json --output trivy-report.json package.json
+      
+    - name: 上传Trivy扫描结果
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: trivy-report.json
+      if: always()
+      
+    - name: SonarCloud扫描
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

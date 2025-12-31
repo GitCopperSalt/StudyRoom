@@ -1,0 +1,80 @@
+name: Dependency Update
+
+on:
+  schedule:
+    # 每周一早上8点自动检查依赖更新
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+
+jobs:
+  dependency-review:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout代码
+      uses: actions/checkout@v4
+      
+    - name: 设置Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '16'
+        
+    - name: 运行npm outdated
+      run: |
+        cd client_admin && npm outdated
+        cd ../client_home && npm outdated
+        
+    - name: 自动创建PR更新依赖
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const { execSync } = require('child_process');
+          
+          // 检查client_admin
+          console.log('检查client_admin依赖...');
+          try {
+            execSync('cd client_admin && npm update', { stdio: 'inherit' });
+            console.log('client_admin依赖已更新');
+          } catch (error) {
+            console.log('client_admin依赖更新失败:', error.message);
+          }
+          
+          // 检查client_home
+          console.log('检查client_home依赖...');
+          try {
+            execSync('cd client_home && npm update', { stdio: 'inherit' });
+            console.log('client_home依赖已更新');
+          } catch (error) {
+            console.log('client_home依赖更新失败:', error.message);
+          }
+          
+          // 检查是否有更改
+          const { execSync } = require('child_process');
+          try {
+            const status = execSync('git status --porcelain').toString();
+            if (status) {
+              console.log('检测到文件更改，将创建PR...');
+              
+              // 创建新的分支
+              execSync('git checkout -b dependency-update-' + new Date().toISOString().slice(0, 10));
+              execSync('git add .');
+              execSync('git commit -m "chore: 更新npm依赖"');
+              execSync('git push origin HEAD');
+              
+              // 创建PR
+              const pr = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🔄 依赖自动更新 - ' + new Date().toLocaleDateString(),
+                head: 'dependency-update-' + new Date().toISOString().slice(0, 10),
+                base: 'develop',
+                body: '这个PR自动更新了npm依赖。\n\n请检查更改并确保所有测试通过。'
+              });
+              
+              console.log('PR创建成功:', pr.data.html_url);
+            } else {
+              console.log('没有检测到依赖更改');
+            }
+          } catch (error) {
+            console.log('检查git状态失败:', error.message);
+          }

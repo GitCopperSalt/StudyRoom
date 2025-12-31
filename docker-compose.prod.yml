@@ -3,9 +3,7 @@ version: '3.8'
 services:
   # 管理端前端
   admin-client:
-    build:
-      context: ./client_admin
-      dockerfile: Dockerfile
+    image: ghcr.io/your-org/study_room-client_admin:latest
     ports:
       - "8080:80"
     restart: unless-stopped
@@ -13,12 +11,15 @@ services:
       - NODE_ENV=production
     networks:
       - study_room_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # 用户端前端
   home-client:
-    build:
-      context: ./client_home
-      dockerfile: Dockerfile
+    image: ghcr.io/your-org/study_room-client_home:latest
     ports:
       - "8081:80"
     restart: unless-stopped
@@ -26,15 +27,11 @@ services:
       - NODE_ENV=production
     networks:
       - study_room_network
-
-  # 后端服务（如果需要的话）
-  # backend:
-  #   image: your-backend-image
-  #   ports:
-  #     - "8000:8000"
-  #   restart: unless-stopped
-  #   networks:
-  #     - study_room_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   study_room_network:
