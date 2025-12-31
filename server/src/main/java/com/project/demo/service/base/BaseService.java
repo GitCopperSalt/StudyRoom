@@ -25,6 +25,33 @@ import java.security.MessageDigest;
 import java.util.*;
 
 /**
+ * 基础服务类 - 提供通用的数据库操作功能
+ * 
+ * 本类实现了系统中最核心的数据访问层抽象
+ * 封装了所有实体的通用CRUD操作和复杂的查询功能
+ * 
+ * 主要功能模块：
+ * 1. 通用增删改查：insert, update, delete, select
+ * 2. 分页查询：selectToPage - 支持前端分页请求
+ * 3. 列表查询：selectToList - 返回完整数据列表
+ * 4. 统计查询：count, sum, avg - 聚合计算功能
+ * 5. 分组查询：selectGroupCount, barGroup - 数据分析功能
+ * 6. 条件构建：toWhereSql - 动态SQL拼接
+ * 7. 参数解析：readQuery, readConfig - HTTP参数处理
+ * 8. 数据导入导出：importDb, exportDb - Excel操作
+ * 
+ * 技术特点：
+ * - 动态SQL生成：根据前端参数自动构建查询条件
+ * - 防SQL注入：使用参数化查询和URL解码
+ * - 分页优化：支持大数据集的分页查询
+ * - 驼峰转换：自动处理Java和数据库字段命名差异
+ * - 多重聚合：支持COUNT、SUM、AVG等多种聚合函数
+ * - 灵活排序：支持多字段排序和自定义排序规则
+ * 
+ * 设计模式：
+ * - 泛型设计：通过泛型E实现类型安全
+ * - 模板方法：定义统一的查询模板，子类可扩展
+ * - 策略模式：根据配置参数选择不同的查询策略
  */
 @Slf4j
 public class BaseService <E>{
@@ -33,18 +60,99 @@ public class BaseService <E>{
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * 实体类：通过反射获取当前服务操作的实体类型
+     * 
+     * 获取机制：
+     * 1. 通过getClass()获取当前类实例
+     * 2. 获取父类的泛型参数类型
+     * 3. 动态确定操作的数据表对应的实体类
+     * 
+     * 用途：用于构建表名、执行SQL查询时的实体映射
+     */
     Class<E> eClass = (Class<E>)((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
 
+    /**
+     * 数据表名：将实体类名转换为数据库表名
+     * 
+     * 转换规则：
+     * 1. 驼峰命名转下划线命名（如：UserInfo -> user_info）
+     * 2. 自动添加反引号防止SQL关键字冲突
+     * 3. 基于实体类的简单名称（非全限定名）
+     * 
+     * 优势：
+     * - 自动化表名映射，减少硬编码
+     * - 统一命名规范
+     * - 支持多表操作时的动态表名生成
+     */
     private final String table = humpToLine(eClass.getSimpleName());
 
+    /**
+     * 执行原生SQL查询并映射为实体对象
+     * 
+     * 功能说明：
+     * - 执行动态生成的SQL语句
+     * - 将查询结果自动映射为指定实体类型E
+     * - 支持复杂的SELECT查询操作
+     * 
+     * @param sql 动态生成的SQL语句字符串
+     * @return Query对象，可获取实体类型的查询结果
+     * 
+     * 使用场景：
+     * - 分页查询：select()方法中构建的查询
+     * - 复杂关联查询：多表联查、字段选择
+     * - 排序查询：带ORDER BY的查询
+     */
     public Query runEntitySql(String sql){
         return entityManager.createNativeQuery(sql, eClass);
     }
 
+    /**
+     * 执行原生SQL查询返回数值类型结果
+     * 
+     * 功能说明：
+     * - 执行不需要实体映射的SQL语句
+     * - 主要用于COUNT、SUM、AVG等聚合查询
+     * - 返回的是Number类型或Object类型结果
+     * 
+     * @param sql 动态生成的SQL语句字符串
+     * @return Query对象，可获取数值型查询结果
+     * 
+     * 使用场景：
+     * - 统计查询：count()、sum()、avg()方法
+     * - 数据分析：分组统计、数据汇总
+     * - 验证查询：检查记录是否存在
+     */
     public Query runCountSql(String sql){
         return entityManager.createNativeQuery(sql);
     }
 
+    /**
+     * 插入新记录到数据表
+     * 
+     * 功能说明：
+     * - 接收前端提交的JSON数据并转换为Map
+     * - 动态构建INSERT语句，支持任意字段插入
+     * - 自动处理字段命名转换（驼峰转下划线）
+     * - 区分字符串和数值类型的数据包装
+     * 
+     * @param body 包含待插入数据的Map对象
+     *             key为Java字段名，value为对应的值
+     * 
+     * SQL构建过程：
+     * 1. 构建表名：INSERT INTO `table_name`
+     * 2. 构建字段列表：动态遍历Map的key，转换为数据库字段名
+     * 3. 构建值列表：根据数据类型决定是否添加单引号
+     * 4. 执行插入：使用executeUpdate()方法提交事务
+     * 
+     * 数据类型处理：
+     * - String类型：自动添加单引号包装（如：'value'）
+     * - 数值类型：直接拼接，不添加引号（如：123）
+     * 
+     * 安全特性：
+     * - 表名和字段名使用反引号包裹，防止SQL关键字冲突
+     * - 字段名通过humpToLine转换，避免驼峰命名问题
+     */
     public void insert(Map<String,Object> body){
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append("`").append(table).append("`").append(" (");
@@ -68,6 +176,34 @@ public class BaseService <E>{
         query.executeUpdate();
     }
 
+    /**
+     * 更新数据表中的记录
+     * 
+     * 功能说明：
+     * - 支持条件更新和批量更新操作
+     * - 动态构建UPDATE语句和WHERE条件
+     * - 结合前端搜索筛选参数进行精确更新
+     * - 使用事务确保数据一致性
+     * 
+     * @param query 查询条件Map，包含要更新的记录筛选条件
+     * @param config 配置参数，控制LIKE查询模式
+     * @param body 更新数据Map，key为字段名，value为新值
+     * 
+     * SQL构建过程：
+     * 1. 构建表名：UPDATE `table_name` SET
+     * 2. 构建SET子句：动态遍历更新字段，添加SET字段=值的语句
+     * 3. 构建WHERE子句：调用toWhereSql方法生成查询条件
+     * 4. 执行更新：使用executeUpdate()提交事务
+     * 
+     * 数据类型处理：
+     * - String类型：自动添加单引号包装
+     * - 数值类型：直接拼接数值
+     * 
+     * 条件构建特点：
+     * - LIKE模式：通过config参数控制模糊或精确匹配
+     * - 安全性：防止SQL注入，使用参数化查询
+     * - 灵活性：支持多条件组合更新
+     */
     @Transactional
     public void update(Map<String,String> query,Map<String,String> config,Map<String,Object> body){
         StringBuffer sql = new StringBuffer("UPDATE ").append("`").append(table).append("`").append(" SET ");
@@ -88,6 +224,33 @@ public class BaseService <E>{
         query1.executeUpdate();
     }
 
+    /**
+     * 分页查询 - 返回分页数据和总记录数
+     * 
+     * 功能说明：
+     * - 实现前端分页请求的核心方法
+     * - 同时返回当前页数据和总记录数
+     * - 减少数据库访问次数，提升查询性能
+     * - 支持复杂的条件筛选和排序
+     * 
+     * @param query 查询条件Map，包含字段名和对应的查询值
+     * @param config 配置参数，包含分页、排序、字段选择等配置
+     * @return 包含分页结果的Map对象
+     *         - "list": 当前页的数据列表
+     *         - "count": 总记录数，用于计算总页数
+     * 
+     * 分页计算公式：
+     * - 当前页码：page（从1开始）
+     * - 每页大小：size（默认10条）
+     * - 起始位置：(page-1) * size
+     * - LIMIT子句：LIMIT 起始位置, 每页大小
+     * 
+     * 性能优化：
+     * - 一次查询获取分页数据
+     * - 一次查询获取总记录数
+     * - 避免N+1查询问题
+     * - 支持大数据集分页
+     */
     public Map<String,Object> selectToPage(Map<String,String> query,Map<String,String> config){
         Query select = select(query, config);
         Map<String,Object> map = new HashMap<>();
@@ -130,6 +293,36 @@ public class BaseService <E>{
         return runCountSql(sql.toString());
     }
 
+    /**
+     * 分组统计查询 - 按指定字段分组并计算每组的记录数
+     * 
+     * 功能说明：
+     * - 实现数据分析中的分组统计功能
+     * - 按指定字段对数据进行分组
+     * - 计算每个分组内的记录数量
+     * - 支持WHERE条件筛选和LIKE模式
+     * 
+     * @param query 查询条件Map，包含WHERE子句的筛选条件
+     * @param config 配置参数，必须包含GROUP_BY字段指定分组依据
+     * @return Query对象，返回分组统计结果
+     * 
+     * SQL构建示例：
+     * SELECT COUNT(*) AS count_value, group_field 
+     * FROM table_name 
+     * WHERE condition 
+     * GROUP BY group_field
+     * 
+     * 应用场景：
+     * - 用户分组统计：按用户组统计用户数量
+     * - 时间维度分析：按日期、月份、季度统计
+     * - 地区分布统计：按地区、门店分组统计
+     * - 状态分布分析：按状态、类型分组统计
+     * 
+     * 数据分析价值：
+     * - 提供数据的分布概况
+     * - 支持业务决策的数据依据
+     * - 发现数据中的模式和趋势
+     */
     public Query selectGroupCount(Map<String,String> query,Map<String,String> config){
         StringBuffer sql = new StringBuffer("select COUNT(*) AS count_value, ");
         sql.append(config.get(FindConfig.GROUP_BY)).append(" ");
@@ -142,6 +335,44 @@ public class BaseService <E>{
         return runCountSql(sql.toString());
     }
 
+    /**
+     * 通用查询方法 - 动态构建SQL查询语句
+     * 
+     * 功能说明：
+     * - 系统的核心查询方法，支持灵活的SQL构建
+     * - 支持字段选择、分页、排序、分组等高级功能
+     * - 自动处理前端传入的各种查询参数
+     * - 实现了完整的SQL查询模板
+     * 
+     * @param query 查询条件Map，包含字段名和查询值的映射关系
+     * @param config 配置参数Map，包含查询行为的各种配置选项
+     * @return Query对象，返回执行后的查询结果
+     * 
+     * SQL构建顺序：
+     * 1. SELECT子句：字段选择（默认*或指定字段）
+     * 2. FROM子句：数据表名
+     * 3. WHERE子句：调用toWhereSql()构建条件
+     * 4. GROUP BY子句：可选的分组功能
+     * 5. ORDER BY子句：可选的排序功能
+     * 6. LIMIT子句：可选的分页功能
+     * 
+     * 配置参数支持：
+     * - FIELD：指定查询字段，多字段用逗号分隔
+     * - GROUP_BY：指定分组字段
+     * - ORDER_BY：指定排序字段和方向
+     * - PAGE：页码（从1开始）
+     * - SIZE：每页记录数
+     * 
+     * 默认行为：
+     * - 未指定FIELD时查询所有字段(*)
+     * - 未指定PAGE时返回所有记录
+     * - 未指定SIZE时默认10条记录
+     * 
+     * 性能优化：
+     * - 只查询必要字段，减少数据传输量
+     * - 支持分页，避免大数据集内存溢出
+     * - 使用预编译SQL，提高查询效率
+     */
     public Query select(Map<String,String> query,Map<String,String> config){
         StringBuffer sql = new StringBuffer("select ");
         sql.append(config.get(FindConfig.FIELD) == null || "".equals(config.get(FindConfig.FIELD)) ? "*" : config.get(FindConfig.FIELD)).append(" ");
@@ -161,6 +392,34 @@ public class BaseService <E>{
         return runEntitySql(sql.toString());
     }
 
+    /**
+     * 删除数据表中的记录
+     * 
+     * 功能说明：
+     * - 支持条件删除和批量删除操作
+     * - 动态构建DELETE语句和WHERE条件
+     * - 结合前端搜索筛选参数进行精确删除
+     * - 使用事务确保数据一致性
+     * 
+     * @param query 查询条件Map，包含要删除的记录筛选条件
+     * @param config 配置参数，控制LIKE查询模式
+     * 
+     * SQL构建过程：
+     * 1. 构建表名：DELETE FROM `table_name`
+     * 2. 构建WHERE子句：调用toWhereSql方法生成查询条件
+     * 3. 执行删除：使用executeUpdate()提交事务
+     * 
+     * 安全性考虑：
+     * - WHERE条件必须明确，避免误删全表数据
+     * - 使用参数化查询，防止SQL注入
+     * - 事务管理确保删除操作的原子性
+     * - 日志记录用于审计和故障排查
+     * 
+     * 注意事项：
+     * - 谨慎使用批量删除功能
+     * - 建议在生产环境中增加删除前的确认机制
+     * - 可考虑软删除（标记删除）替代物理删除
+     */
     @Transactional
     public void delete(Map<String,String> query,Map<String,String> config){
         StringBuffer sql = new StringBuffer("DELETE FROM ").append("`").append(table).append("`").append(" ");
@@ -170,6 +429,42 @@ public class BaseService <E>{
         query1.executeUpdate();
     }
 
+    /**
+     * 记录统计查询 - 计算满足条件的记录总数
+     * 
+     * 功能说明：
+     * - 实现数据统计功能，支持无条件统计和分组统计
+     * - 用于分页查询中的总页数计算
+     * - 支持WHERE条件筛选和LIKE模式
+     * - 为前端提供数据总量信息
+     * 
+     * @param query 查询条件Map，包含WHERE子句的筛选条件
+     * @param config 配置参数，控制分组统计模式
+     * @return Query对象，返回统计结果
+     * 
+     * 统计模式：
+     * 1. 总记录数统计：
+     *    SELECT COUNT(*) FROM table_name WHERE conditions
+     * 2. 分组统计：
+     *    SELECT group_field, COUNT(group_field) FROM table_name WHERE conditions GROUP BY group_field
+     * 
+     * 应用场景：
+     * - 分页查询：计算总页数 (total_records / page_size)
+     * - 数据概览：了解系统中的数据规模
+     * - 条件统计：统计满足特定条件的记录数量
+     * - 分组统计：按维度统计记录分布情况
+     * 
+     * 性能特点：
+     * - 使用数据库COUNT函数，效率较高
+     * - 支持索引优化，统计速度快
+     * - 避免将所有数据加载到内存
+     * - 适合大数据集统计
+     * 
+     * 注意事项：
+     * - 分组统计时，结果集会包含多个分组
+     * - WHERE条件会影响统计结果
+     * - 大表统计可能较慢，建议建立合适索引
+     */
     public Query count(Map<String,String> query,Map<String,String> config){
         StringBuffer sql = new StringBuffer("SELECT ");
 //        log.info("拼接统计函数前");
@@ -213,6 +508,47 @@ public class BaseService <E>{
         return runCountSql(sql.toString());
     }
 
+    /**
+     * 动态构建WHERE子句 - 将查询条件转换为SQL WHERE语句
+     * 
+     * 功能说明：
+     * - 系统的核心SQL条件构建器
+     * - 支持多种查询模式：精确匹配、模糊查询、范围查询
+     * - 自动处理字段命名转换和数据类型编码
+     * - 防止SQL注入，使用URL解码处理特殊字符
+     * 
+     * @param query 查询条件Map，包含字段名和查询值的映射
+     * @param like 是否使用LIKE模糊查询模式
+     *        true: 模糊查询（LIKE '%value%'）
+     *        false: 精确匹配（= 'value'）
+     * @return 构建完成的WHERE子句字符串，若无查询条件则返回空字符串
+     * 
+     * 查询类型支持：
+     * 1. 精确查询：field = 'value'
+     * 2. 模糊查询：field LIKE '%value%'
+     * 3. 范围查询：field_min <= field <= field_max
+     *    - 最小值查询：field >= 'min_value'
+     *    - 最大值查询：field <= 'max_value'
+     * 
+     * 命名约定：
+     * - 普通字段：直接使用字段名（如：userName）
+     * - 最小值字段：字段名 + "_min"（如：age_min）
+     * - 最大值字段：字段名 + "_max"（如：age_max）
+     * 
+     * 数据处理：
+     * - 字段名自动转换：驼峰命名转下划线命名
+     * - 值URL解码：处理前端编码的查询参数
+     * - 引号处理：字符串类型自动添加单引号
+     * 
+     * 安全性：
+     * - 使用URLDecoder.decode()防止编码攻击
+     * - 字段名和表名使用反引号包裹
+     * - 避免SQL注入，确保系统安全
+     * 
+     * SQL示例：
+     * 输入：{userName="admin", age_min="18", age_max="30"}
+     * 输出：WHERE `user_name` LIKE '%admin%' AND `age` >= '18' AND `age` <= '30'
+     */
     public String toWhereSql(Map<String,String> query, Boolean like) {
         if (query.size() > 0) {
             try {

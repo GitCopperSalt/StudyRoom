@@ -2,6 +2,40 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--
+ * 用户数据访问层Mapper映射文件
+ * 
+ * 本文件定义了用户实体(User)的数据库操作SQL语句
+ * 使用MyBatis框架的动态SQL特性实现灵活的查询功能
+ * 
+ * 主要功能模块：
+ * 1. 结果映射配置：UserResult - 定义Java对象与数据库字段的映射关系
+ * 2. SQL片段复用：selectUserVo - 提取通用的SELECT字段列表
+ * 3. 动态查询功能：selectUserList - 支持多条件组合查询
+ * 4. 精确查询功能：selectUserById - 根据主键查询单条记录
+ * 5. 数据操作功能：insertUser, updateUser, deleteUser - 增删改操作
+ * 6. 批量删除功能：deleteUserByIds - 支持批量删除用户
+ * 7. 动态表查询：selectExamineState - 支持动态表名的查询
+ * 
+ * 动态SQL特性：
+ * - 条件判断：使用<if>标签根据参数动态构建WHERE条件
+ * - 模糊查询：支持用户名和昵称的模糊搜索
+ * - 空值处理：自动过滤NULL值和空字符串
+ * - SQL片段：通过<sql>和<include>实现代码复用
+ * 
+ * 搜索筛选功能：
+ * - 支持按状态、用户组、登录时间等字段精确筛选
+ * - 支持按用户名、昵称进行模糊搜索
+ * - 支持按手机号、邮箱进行精确匹配
+ * - 支持手机号和邮箱状态筛选
+ * 
+ * 性能优化：
+ * - 使用预编译SQL防止SQL注入
+ * - 只查询必要字段，减少数据传输量
+ * - 合理使用索引字段进行查询
+ * - 支持分页查询（结合BaseService实现）
+ -->
 <mapper namespace="com.project.demo.dao.UserMapper">
 
     <resultMap type="com.project.demo.entity.User" id="UserResult">

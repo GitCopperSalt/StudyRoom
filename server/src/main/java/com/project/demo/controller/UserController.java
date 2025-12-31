@@ -122,31 +122,42 @@ public class UserController extends BaseController<User, UserService> {
 
         List resultList = null;
         Map<String, String> map = new HashMap<>();
+        // ========== 用户身份验证阶段 ==========
+        // 支持多种登录方式：用户名、邮箱、手机号
         if(username != null && "".equals(username) == false){
+            // 用户名登录方式
             map.put("username", username);
             resultList = service.select(map, new HashMap<>()).getResultList();
         }
         else if(email != null && "".equals(email) == false){
+            // 邮箱登录方式
             map.put("email", email);
             resultList = service.select(map, new HashMap<>()).getResultList();
         }
         else if(phone != null && "".equals(phone) == false){
+            // 手机号登录方式
             map.put("phone", phone);
             resultList = service.select(map, new HashMap<>()).getResultList();
         }else{
             return error(30000, "账号或密码不能为空");
         }
+        
+        // 验证输入参数完整性
         if (resultList == null || password == null) {
             return error(30000, "账号或密码不能为空");
         }
-        //判断是否有这个用户
+        
+        // ========== 用户存在性验证 ==========
+        // 判断是否有这个用户
         if (resultList.size()<=0){
             return error(30000,"用户不存在");
         }
 
+        // 提取用户信息
         User byUsername = (User) resultList.get(0);
 
-
+        // ========== 用户组权限验证阶段 ==========
+        // 验证用户所属的用户组是否存在且有效
         Map<String, String> groupMap = new HashMap<>();
         groupMap.put("name",byUsername.getUserGroup());
         List groupList = userGroupService.select(groupMap, new HashMap<>()).getResultList();
@@ -156,39 +167,66 @@ public class UserController extends BaseController<User, UserService> {
 
         UserGroup userGroup = (UserGroup) groupList.get(0);
 
-        //查询用户审核状态
+        // ========== 用户审核状态验证阶段 ==========
+        // 对于需要审核的用户组，验证用户的审核状态
+        // 这是一种动态权限检查机制，通过sourceTable字段确定需要检查的业务表
         if (!StringUtils.isEmpty(userGroup.getSourceTable())){
+            // 构建查询用户审核状态的SQL语句
             String sql = "select examine_state from "+ userGroup.getSourceTable() +" WHERE user_id = " + byUsername.getUserId();
             String res = String.valueOf(service.runCountSql(sql).getSingleResult());
+            
+            // 检查用户是否存在对应的审核记录
             if (res==null){
                 return error(30000,"用户不存在");
             }
+            
+            // 验证审核状态是否通过
             if (!res.equals("已通过")){
                 return error(30000,"该用户审核未通过");
             }
         }
 
-        //查询用户状态
+        // ========== 用户账户状态验证阶段 ==========
+        // 验证用户账户状态，确保只有可用状态的用户能够登录
+        // 这是最关键的安全检查，防止冻结、注销等异常状态用户登录
         if (byUsername.getState()!=1){
             return error(30000,"用户非可用状态，不能登录");
         }
 
+        // ========== 密码验证阶段 ==========
+        // 对用户输入的密码进行加密处理
         String md5password = service.encryption(password);
         System.out.println("pwd:"+md5password);
+        
+        // 验证密码是否正确
         if (byUsername.getPassword().equals(md5password)) {
-            // 存储Token到数据库
+            // ========== Token生成和存储阶段 ==========
+            // 密码验证成功，生成访问令牌
             AccessToken accessToken = new AccessToken();
+            
+            // 生成UUID格式的访问令牌（去除连字符）
             accessToken.setToken(UUID.randomUUID().toString().replaceAll("-", ""));
+            
+            // 关联用户ID，便于后续的Token验证和用户信息获取
             accessToken.setUser_id(byUsername.getUserId());
+            
+            // 将Token存储到数据库中
             tokenService.save(accessToken);
 
-            // 返回用户信息
+            // ========== 登录成功响应阶段 ==========
+            // 准备返回给前端的用户信息
             JSONObject user = JSONObject.parseObject(JSONObject.toJSONString(byUsername));
+            
+            // 将生成的访问令牌添加到用户信息中
             user.put("token", accessToken.getToken());
+            
+            // 构建标准响应格式
             JSONObject ret = new JSONObject();
             ret.put("obj",user);
+            
             return success(ret);
         } else {
+            // ========== 登录失败处理 ==========
             return error(30000, "账号或密码不正确");
         }
     }
